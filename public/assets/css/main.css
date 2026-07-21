@@ -35,9 +35,14 @@ h2 {
 }
 
 .view {
-  display: flex;
   justify-content: center;
   padding: 1.5rem 1rem 4rem;
+}
+
+/* Anzeige nur setzen, wenn nicht hidden - sonst gewinnt diese Regel gegen
+   das UA-Standardverhalten von [hidden] und der Screen bleibt sichtbar. */
+.view:not([hidden]) {
+  display: flex;
 }
 
 .card {
@@ -158,12 +163,11 @@ button.linklike {
 
 /* ---- Hauptansicht ---- */
 #view-main {
-  display: block;
   padding: 0 0 3rem;
 }
 
-#view-main[hidden] {
-  display: none;
+#view-main:not([hidden]) {
+  display: block;
 }
 
 .topbar {
@@ -251,9 +255,99 @@ button.linklike {
   min-height: 1em;
 }
 
+/* ---- Editor-Toolbar: kompakter, moderner Stil statt Quills Standard-Snow-Look ---- */
+.ql-toolbar.ql-snow {
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: var(--card);
+  padding: 4px 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ql-toolbar.ql-snow .ql-formats {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  margin: 2px 6px 2px 0;
+  padding-right: 6px;
+  position: relative;
+}
+
+.ql-toolbar.ql-snow .ql-formats:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 1px;
+  background: var(--border);
+}
+
+.ql-snow.ql-toolbar button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background-color 0.12s ease;
+}
+
+.ql-snow.ql-toolbar button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.ql-snow.ql-toolbar button:hover {
+  background: var(--bg);
+}
+
+.ql-snow.ql-toolbar button.ql-active {
+  background: #e2eafc;
+}
+
+.ql-snow .ql-picker {
+  height: 28px;
+}
+
+.ql-snow .ql-picker-label {
+  border-radius: 6px;
+  border-color: transparent;
+  padding-left: 8px;
+  font-size: 0.85rem;
+}
+
+.ql-snow .ql-picker-label:hover,
+.ql-snow .ql-picker.ql-expanded .ql-picker-label {
+  background: var(--bg);
+}
+
+.ql-snow .ql-picker.ql-header {
+  width: auto;
+  min-width: 92px;
+}
+
+.ql-snow .ql-picker-options {
+  border-radius: 8px;
+  border-color: var(--border);
+  padding: 6px;
+}
+
+.ql-snow .ql-picker-options .ql-picker-item {
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+
 #editor {
   background: var(--card);
   min-height: 45vh;
+  border: 1px solid var(--border);
+  border-radius: 0 0 8px 8px;
 }
 
 .share-list {

@@ -409,21 +409,46 @@ async function requestShareAccess(ev) {
 }
 
 // ---- Initialisierung --------------------------------------------------------
+// Tooltips fuer die reinen Icon-Buttons der Toolbar (Quill liefert keine mit).
+const TOOLBAR_TITLES = {
+  bold: "Fett", italic: "Kursiv", underline: "Unterstrichen", strike: "Durchgestrichen",
+  blockquote: "Zitat", "code-block": "Code", link: "Link einfuegen", clean: "Formatierung entfernen",
+  "list-ordered": "Nummerierte Liste", "list-bullet": "Aufzaehlung", "list-check": "Checkliste",
+};
+
+function labelToolbarButtons(root) {
+  root.querySelectorAll("button").forEach((btn) => {
+    const cls = [...btn.classList].find((c) => c.startsWith("ql-") && c !== "ql-active");
+    if (!cls) return;
+    const name = cls.slice(3);
+    const value = btn.getAttribute("value");
+    const key = value ? `${name}-${value}` : name;
+    const title = TOOLBAR_TITLES[key] || TOOLBAR_TITLES[name];
+    if (title) btn.title = title;
+  });
+  root.querySelectorAll(".ql-picker").forEach((picker) => {
+    if (picker.classList.contains("ql-header")) picker.setAttribute("aria-label", "Textformat");
+    if (picker.classList.contains("ql-color")) picker.setAttribute("aria-label", "Textfarbe");
+  });
+}
+
 function initQuill() {
   quill = new Quill("#editor", {
     modules: {
+      // Schlanke, auf das Wesentliche reduzierte Toolbar statt der vollen
+      // Quill-Standardpalette - passt zum kompakteren Stil in main.css.
       toolbar: [
-        [{ size: ["small", false, "large", "huge"] }],
-        ["bold", "italic", "underline"],
+        [{ header: [false, 2, 3] }],
+        ["bold", "italic", "underline", "strike"],
         [{ color: [] }],
-        ["blockquote", "code-block"],
         [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
-        ["link"],
+        ["blockquote", "code-block", "link"],
         ["clean"],
       ],
     },
     theme: "snow",
   });
+  labelToolbarButtons(document.querySelector(".ql-toolbar"));
   quill.on("text-change", (d, o, source) => {
     if (source === "user") setDirty(true);
   });
