@@ -5,6 +5,17 @@
     Header always set X-Frame-Options "DENY"
 </IfModule>
 
+# JS/CSS immer neu validieren lassen (ETag/Last-Modified), statt ungeprueft
+# aus dem Browser-Cache zu bedienen. Ohne das kann eine geaenderte Datei
+# (z. B. app.js) beim Reload unbemerkt als alte, gecachte Fassung ausgeliefert
+# werden. no-cache erzwingt eine Revalidierung, kein erneutes Volladen bei
+# unveraendertem Inhalt (der Server antwortet dann mit 304).
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|css)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>
+
 # PATH_INFO fuer den API-Front-Controller (api.php/entries/...)
 <IfModule mod_rewrite.c>
     RewriteEngine On
