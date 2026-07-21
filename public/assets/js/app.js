@@ -635,7 +635,10 @@ async function createShare(ev) {
       delay_hours: Number($("share-delay").value),
     });
     status("Share eingerichtet. Seed-Phrase jetzt sicher übergeben – sie wird nicht erneut angezeigt.", "ok");
-    regenSeed();
+    // Absichtlich KEIN regenSeed() hier: die Phrase muss fuer Kopieren/Drucken
+    // sichtbar bleiben, bis der Nutzer explizit eine neue erzeugt. Sonst zeigt
+    // ein Klick auf "Drucken" direkt nach dem Anlegen die falsche (neue,
+    // unbenutzte) Phrase statt der tatsaechlich am Server hinterlegten.
     await renderShares();
   } catch (err) {
     fail(err);

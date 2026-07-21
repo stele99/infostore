@@ -39,9 +39,18 @@ final class Config
             'db_path'        => $env('INFOSTORE_DB', $root . '/var/data.sqlite3'),
             'log_dir'        => $env('INFOSTORE_LOG_DIR', $root . '/var/log'),
             'secret_file'    => $env('INFOSTORE_SECRET_FILE', $root . '/var/app_secret'),
-            'mail_transport' => $env('INFOSTORE_MAIL', 'file'), // file | native
+            'mail_transport' => $env('INFOSTORE_MAIL', 'file'), // file | native | smtp
             'mail_dir'       => $env('INFOSTORE_MAIL_DIR', $root . '/var/mail'),
             'mail_from'      => $env('INFOSTORE_MAIL_FROM', 'infostore@localhost'),
+            'mail_from_name' => $env('INFOSTORE_MAIL_FROM_NAME', ''),
+            // SMTP-Zugangsdaten (mail_transport = smtp). Niemals im Repository -
+            // nur per Umgebungsvariable oder config/local.php (gitignored) setzen.
+            'smtp_host'        => $env('INFOSTORE_SMTP_HOST', ''),
+            'smtp_port'        => (int) $env('INFOSTORE_SMTP_PORT', '587'),
+            'smtp_encryption'  => $env('INFOSTORE_SMTP_ENCRYPTION', 'starttls'), // starttls | tls | none
+            'smtp_username'    => $env('INFOSTORE_SMTP_USERNAME', ''),
+            'smtp_password'    => $env('INFOSTORE_SMTP_PASSWORD', ''),
+            'smtp_timeout'     => (int) $env('INFOSTORE_SMTP_TIMEOUT', '10'),
             'session_name'   => 'infostore_sid',
             'max_body_bytes' => 3_000_000,
             'max_entries_per_store' => 1000,

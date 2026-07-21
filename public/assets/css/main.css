@@ -1589,9 +1589,13 @@ body.app-main {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.4rem 1.5rem;
-  padding-left: 1.5rem;
+  padding-left: 0;
   font-family: ui-monospace, monospace;
   font-size: 1.05rem;
+  /* Marker (1., 2., ... 12.) innerhalb der Grid-Zelle rendern statt links
+     davor - sonst haengen zweistellige Nummern in den Seitenrand hinein
+     und werden von manchen Druckern abgeschnitten. */
+  list-style-position: inside;
 }
 
 .ps-warning {
@@ -1599,6 +1603,12 @@ body.app-main {
   padding: 0.6rem 0.8rem;
   margin-top: 1.5rem;
   font-weight: 600;
+}
+
+/* Garantierter Seitenrand unabhaengig von Browser-/Druckertreiber-Defaults
+   (manche setzen im Druckdialog sehr knappe oder gar keine Raender). */
+@page {
+  margin: 20mm 18mm;
 }
 
 @media print {
@@ -1610,5 +1620,10 @@ body.app-main {
     display: block !important;
     color: #000;
     font-family: Georgia, "Times New Roman", serif;
+    /* Zweite Sicherheitsmarge zusaetzlich zu @page - falls ein Drucker
+       ueber die CSS-Seitenraender hinaus einen eigenen minimalen
+       unbedruckbaren Rand erzwingt (bei vielen Tintenstrahldruckern
+       links/rechts ueblich). */
+    padding: 0 6mm;
   }
 }
