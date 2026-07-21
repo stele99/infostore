@@ -6,7 +6,7 @@ namespace App;
 
 /**
  * Konfiguration aus Umgebungsvariablen mit sicheren Defaults.
- * Lokale Overrides optional in config/local.php (gitignored, gibt Array zurueck).
+ * Lokale Overrides optional in config/local.php (gitignored, gibt Array zurück).
  * Es liegen keine Produktionspfade oder Geheimnisse im Repository.
  */
 final class Config
@@ -21,7 +21,7 @@ final class Config
         return self::$values[$key] ?? null;
     }
 
-    /** Nur fuer Tests: Konfiguration ueberschreiben. */
+    /** Nur für Tests: Konfiguration überschreiben. */
     public static function override(array $values): void
     {
         if (self::$values === null) {
@@ -62,7 +62,7 @@ final class Config
     }
 
     /**
-     * Serverseitiges Geheimnis fuer Decoy-Salts (Anti-Enumeration).
+     * Serverseitiges Geheimnis für Decoy-Salts (Anti-Enumeration).
      * Wird beim ersten Zugriff erzeugt und ausserhalb des Webroot gespeichert.
      */
     public static function appSecret(): string

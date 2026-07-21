@@ -8,7 +8,7 @@ use PDO;
 use RuntimeException;
 
 /**
- * Versionierte Migrationen: migrations/NNN_name.sql laeuft genau einmal
+ * Versionierte Migrationen: migrations/NNN_name.sql läuft genau einmal
  * und wird in schema_migrations protokolliert.
  */
 final class Migrator
@@ -31,7 +31,7 @@ final class Migrator
         foreach ($files as $file) {
             $base = basename($file);
             if (!preg_match('/^(\d{3})_([a-z0-9_]+)\.sql$/', $base, $m)) {
-                throw new RuntimeException("Ungueltiger Migrationsdateiname: $base");
+                throw new RuntimeException("Ungültiger Migrationsdateiname: $base");
             }
             $version = (int) $m[1];
             if (in_array($version, $applied, true)) {

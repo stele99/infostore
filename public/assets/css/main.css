@@ -1,4 +1,4 @@
-/* Secure Info Store - responsives, zugaengliches Basis-Layout */
+/* Secure Info Store - responsives, zugängliches Basis-Layout */
 
 :root {
   --bg: #f4f5f7;
@@ -410,5 +410,58 @@ button.linklike {
 
   .entry-list {
     max-height: 30vh;
+  }
+}
+
+/* ---- Druckvorlage Notfallzugriff ----
+   Auf dem Bildschirm unsichtbar; beim Drucken wird ausschliesslich dieser
+   Block angezeigt und alles andere ausgeblendet (siehe @media print unten). */
+#print-sheet {
+  display: none;
+}
+
+#print-sheet table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+#print-sheet th,
+#print-sheet td {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #999;
+}
+
+#print-sheet th {
+  width: 40%;
+  background: #f0f0f0;
+}
+
+.ps-seed-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem 1.5rem;
+  padding-left: 1.5rem;
+  font-family: ui-monospace, monospace;
+  font-size: 1.05rem;
+}
+
+.ps-warning {
+  border: 2px solid #000;
+  padding: 0.6rem 0.8rem;
+  margin-top: 1.5rem;
+  font-weight: 600;
+}
+
+@media print {
+  body > *:not(#print-sheet) {
+    display: none !important;
+  }
+
+  #print-sheet {
+    display: block !important;
+    color: #000;
+    font-family: Georgia, "Times New Roman", serif;
   }
 }

@@ -1,9 +1,9 @@
 /**
  * Secure Info Store - UI-Steuerung.
  *
- * Schluesselmaterial (contentKey, contentKeyRaw) lebt ausschliesslich in
+ * Schlüsselmaterial (contentKey, contentKeyRaw) lebt ausschliesslich in
  * diesem Modul-Scope im Speicher: kein localStorage, kein sessionStorage,
- * keine URLs. Nach 15 Minuten Inaktivitaet oder Logout wird es verworfen.
+ * keine URLs. Nach 15 Minuten Inaktivität oder Logout wird es verworfen.
  */
 
 import { api, ApiException, setCsrf } from "./api.js";
@@ -14,7 +14,7 @@ const IDLE_LOCK_MS = 15 * 60 * 1000;
 
 // ---- In-Memory-Zustand (nie persistieren!) ---------------------------------
 let contentKey = null;      // CryptoKey AES-GCM
-let contentKeyRaw = null;   // Uint8Array, nur fuer Share-Wrapping (Owner)
+let contentKeyRaw = null;   // Uint8Array, nur für Share-Wrapping (Owner)
 let storeName = null;
 let role = null;            // "owner" | "recipient"
 let entriesIndex = [];      // [{entry_uid, title, updated_at, created_at}]
@@ -52,7 +52,7 @@ function fail(err) {
   }
 }
 
-// ---- Sperren / Schluessel verwerfen ----------------------------------------
+// ---- Sperren / Schlüssel verwerfen ----------------------------------------
 function wipeKeys() {
   if (contentKeyRaw) contentKeyRaw.fill(0);
   contentKey = null;
@@ -78,7 +78,7 @@ function touchIdleTimer() {
   if (contentKey) {
     idleTimer = setTimeout(() => {
       api.post("/auth/logout").catch(() => {});
-      lock("Aus Sicherheitsgruenden gesperrt (15 Minuten inaktiv). Bitte neu anmelden.");
+      lock("Aus Sicherheitsgründen gesperrt (15 Minuten inaktiv). Bitte neu anmelden.");
     }, IDLE_LOCK_MS);
   }
 }
@@ -91,10 +91,10 @@ async function doLogin(register) {
   const name = $("login-store").value.trim();
   const password = $("login-password").value;
   if (name.length < 5 || password.length < 12) {
-    status("Store-ID (min. 5) und Passwort (min. 12 Zeichen) pruefen.", "error");
+    status("Store-ID (min. 5) und Passwort (min. 12 Zeichen) prüfen.", "error");
     return;
   }
-  status(register ? "Store wird angelegt..." : "Schluessel wird abgeleitet...");
+  status(register ? "Store wird angelegt..." : "Schlüssel wird abgeleitet...");
   try {
     let saltB64, iterations;
     if (register) {
@@ -161,7 +161,7 @@ async function loadEntries(selectUid = null) {
     try {
       title = await c.decrypt(contentKey, row.title_ct, row.title_iv, c.entryAad(storeName, row.entry_uid, "title"));
     } catch {
-      title = "⚠ Nicht entschluesselbar (manipuliert?)";
+      title = "⚠ Nicht entschlüsselbar (manipuliert?)";
     }
     entriesIndex.push({ uid: row.entry_uid, title, updated_at: row.updated_at, created_at: row.created_at });
   }
@@ -193,13 +193,13 @@ async function openEntry(uid) {
     title = await c.decrypt(contentKey, row.title_ct, row.title_iv, c.entryAad(storeName, uid, "title"));
     body = await c.decrypt(contentKey, row.body_ct, row.body_iv, c.entryAad(storeName, uid, "body"));
   } catch {
-    status("Eintrag konnte nicht entschluesselt werden - moegliche Manipulation!", "error");
+    status("Eintrag konnte nicht entschlüsselt werden - mögliche Manipulation!", "error");
     return;
   }
   currentUid = uid;
   currentUpdatedAt = row.updated_at;
   $("entry-title").value = title;
-  $("entry-meta").textContent = `Erstellt ${row.created_at} · Geaendert ${row.updated_at}`;
+  $("entry-meta").textContent = `Erstellt ${row.created_at} · Geändert ${row.updated_at}`;
   // Inhalt ist ein Quill-Delta (strukturiertes JSON), kein HTML: kein XSS-Sink.
   try {
     quill.setContents(JSON.parse(body));
@@ -247,7 +247,7 @@ async function saveEntry() {
     await loadEntries(uid);
   } catch (err) {
     if (err instanceof ApiException && err.code === "conflict") {
-      status("Konflikt: Der Eintrag wurde parallel geaendert. Bitte neu laden.", "error");
+      status("Konflikt: Der Eintrag wurde parallel geändert. Bitte neu laden.", "error");
     } else {
       fail(err);
     }
@@ -257,10 +257,10 @@ async function saveEntry() {
 async function deleteEntry() {
   if (!currentUid) return;
   const entry = entriesIndex.find((e) => e.uid === currentUid);
-  if (!confirm(`Eintrag "${entry ? entry.title : ""}" wirklich loeschen?`)) return;
+  if (!confirm(`Eintrag "${entry ? entry.title : ""}" wirklich löschen?`)) return;
   try {
     await api.del(`/entries/${currentUid}`);
-    status("Eintrag geloescht.", "ok");
+    status("Eintrag gelöscht.", "ok");
     newEntry();
     await loadEntries();
   } catch (err) {
@@ -271,6 +271,39 @@ async function deleteEntry() {
 // ---- Share-Verwaltung (Owner) ----------------------------------------------
 function regenSeed() {
   $("share-seed").textContent = c.generateSeedWords(wordlist).join(" ");
+}
+
+/**
+ * Befüllt die Druckvorlage mit den aktuell im Formular stehenden Werten und
+ * öffnet den Systemdruckdialog. Die Phrase verlässt dabei nie den Browser -
+ * es wird nichts hochgeladen, nur das aktuelle DOM für den Druck ausgeblendet
+ * bzw. eingeblendet (siehe @media print in main.css).
+ */
+function printShareSheet() {
+  const phrase = $("share-seed").textContent.trim();
+  const words = phrase.split(/\s+/).filter(Boolean);
+  if (words.length !== 12) {
+    status("Bitte zuerst eine Seed-Phrase erzeugen.", "error");
+    return;
+  }
+
+  const list = $("ps-seed-list");
+  list.textContent = "";
+  words.forEach((word) => {
+    const li = document.createElement("li");
+    li.textContent = word;
+    list.appendChild(li);
+  });
+
+  const url = location.origin + location.pathname;
+  const delay = Number($("share-delay").value) || 0;
+  $("ps-store").textContent = storeName || "(Store-ID hier eintragen)";
+  $("ps-url").textContent = url;
+  $("ps-delay").textContent = delay === 0 ? "keine (sofortiger Zugriff)" : `${delay} Stunden`;
+  $("ps-mail").textContent = $("share-mail").value.trim() || "(nicht angegeben)";
+  $("ps-date").textContent = new Date().toLocaleString("de-DE");
+
+  window.print();
 }
 
 async function createShare(ev) {
@@ -296,7 +329,7 @@ async function createShare(ev) {
       owner_mail: $("share-mail").value.trim(),
       delay_hours: Number($("share-delay").value),
     });
-    status("Share eingerichtet. Seed-Phrase jetzt sicher uebergeben - sie wird nicht erneut angezeigt.", "ok");
+    status("Share eingerichtet. Seed-Phrase jetzt sicher übergeben - sie wird nicht erneut angezeigt.", "ok");
     await renderShares();
   } catch (err) {
     fail(err);
@@ -335,24 +368,24 @@ async function renderShares() {
       addBtn("Widerrufen", true, () => api.post(`/shares/${s.share_uid}/revoke`));
     }
     addBtn("Entfernen", false, async () => {
-      if (confirm("Share endgueltig entfernen?")) await api.del(`/shares/${s.share_uid}`);
+      if (confirm("Share endgültig entfernen?")) await api.del(`/shares/${s.share_uid}`);
     });
     ul.appendChild(li);
   }
 }
 
-// ---- Notfallzugriff (Empfaenger) -------------------------------------------
+// ---- Notfallzugriff (Empfänger) -------------------------------------------
 async function requestShareAccess(ev) {
   ev.preventDefault();
   const store = $("sa-store").value.trim();
   const phrase = c.normalizeSeed($("sa-seed").value);
   if (phrase.split(" ").length !== 12) {
-    status("Die Seed-Phrase muss aus 12 Woertern bestehen.", "error");
+    status("Die Seed-Phrase muss aus 12 Wörtern bestehen.", "error");
     return;
   }
   const box = $("sa-status");
   box.hidden = false;
-  box.textContent = "Schluessel werden geprueft...";
+  box.textContent = "Schlüssel werden geprüft...";
   try {
     const { shares } = await api.post("/share-access/kdf", { store });
     let granted = null, waiting = null, denied = null;
@@ -392,15 +425,15 @@ async function requestShareAccess(ev) {
       setCsrf(granted.result.csrf);
       box.hidden = true;
       enterMain();
-      status("Zugriff gewaehrt (nur Lesen).", "ok");
+      status("Zugriff gewährt (nur Lesen).", "ok");
     } else if (waiting) {
-      box.textContent = `Anfrage laeuft. Freigabe am ${waiting.available_at} (UTC) - der Inhaber wurde benachrichtigt und kann ablehnen. Diese Seite spaeter erneut aufrufen.`;
+      box.textContent = `Anfrage läuft. Freigabe am ${waiting.available_at} (UTC) - der Inhaber wurde benachrichtigt und kann ablehnen. Diese Seite später erneut aufrufen.`;
     } else if (denied) {
       box.textContent = denied.status === "denied"
         ? "Der Inhaber hat die Anfrage abgelehnt."
         : "Der Zugriff wurde widerrufen.";
     } else {
-      box.textContent = "Kein passender Share gefunden - Store-ID und Seed-Phrase pruefen.";
+      box.textContent = "Kein passender Share gefunden - Store-ID und Seed-Phrase prüfen.";
     }
   } catch (err) {
     box.hidden = true;
@@ -409,11 +442,11 @@ async function requestShareAccess(ev) {
 }
 
 // ---- Initialisierung --------------------------------------------------------
-// Tooltips fuer die reinen Icon-Buttons der Toolbar (Quill liefert keine mit).
+// Tooltips für die reinen Icon-Buttons der Toolbar (Quill liefert keine mit).
 const TOOLBAR_TITLES = {
   bold: "Fett", italic: "Kursiv", underline: "Unterstrichen", strike: "Durchgestrichen",
-  blockquote: "Zitat", "code-block": "Code", link: "Link einfuegen", clean: "Formatierung entfernen",
-  "list-ordered": "Nummerierte Liste", "list-bullet": "Aufzaehlung", "list-check": "Checkliste",
+  blockquote: "Zitat", "code-block": "Code", link: "Link einfügen", clean: "Formatierung entfernen",
+  "list-ordered": "Nummerierte Liste", "list-bullet": "Aufzählung", "list-check": "Checkliste",
 };
 
 function labelToolbarButtons(root) {
@@ -488,6 +521,7 @@ function wire() {
   });
   $("bt-shares-back").addEventListener("click", () => showView("view-main"));
   $("bt-seed-new").addEventListener("click", regenSeed);
+  $("bt-seed-print").addEventListener("click", printShareSheet);
   $("form-share-create").addEventListener("submit", (ev) => createShare(ev));
 
   window.addEventListener("beforeunload", (ev) => {
@@ -501,6 +535,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initQuill();
   wire();
   // Kein Auto-Login: Der Content-Key existiert nur im Speicher; nach einem
-  // Reload ist immer eine erneute Passworteingabe noetig.
+  // Reload ist immer eine erneute Passworteingabe nötig.
   lock("");
 });

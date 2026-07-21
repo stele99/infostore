@@ -49,7 +49,7 @@ t('Auth: kein Auto-Create beim Login', function () {
     assert_eq(0, (int) $db->query('SELECT COUNT(*) FROM stores')->fetchColumn());
 });
 
-t('Auth: KDF-Decoy fuer unbekannte Stores ist deterministisch und formatgleich', function () {
+t('Auth: KDF-Decoy für unbekannte Stores ist deterministisch und formatgleich', function () {
     freshDb();
     $auth = makeAuth();
     $a = $auth->kdfParams('gibtsnicht', '1.1.1.1');

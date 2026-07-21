@@ -11,9 +11,9 @@ use App\Repository\StoreRepository;
 
 /**
  * Split-Key-Authentifizierung (Bitwarden-Modell):
- * Der Browser leitet aus dem vollstaendigen Passwort per PBKDF2 einen Master-Key
+ * Der Browser leitet aus dem vollständigen Passwort per PBKDF2 einen Master-Key
  * ab und daraus via HKDF einen getrennten Auth-Key. Nur der Auth-Key wird
- * uebertragen; der Server hasht ihn zusaetzlich mit Argon2id (libsodium).
+ * übertragen; der Server hasht ihn zusätzlich mit Argon2id (libsodium).
  * Passwort und Content-Key erreichen den Server nie.
  */
 final class AuthService
@@ -52,8 +52,8 @@ final class AuthService
         }
 
         if ($this->stores->findByName($name) !== null) {
-            // Bewusst generisch: Registrierung verraet so wenig wie moeglich.
-            throw ApiError::conflict('Registrierung nicht moeglich.');
+            // Bewusst generisch: Registrierung verrät so wenig wie möglich.
+            throw ApiError::conflict('Registrierung nicht möglich.');
         }
 
         $hash = \App\PasswordHash::hash($authKey);
@@ -61,15 +61,15 @@ final class AuthService
         try {
             $storeId = $this->stores->create($name, $hash, $kdfSaltB64, $kdfIterations, 1);
         } catch (\PDOException) {
-            throw ApiError::conflict('Registrierung nicht moeglich.');
+            throw ApiError::conflict('Registrierung nicht möglich.');
         }
         return ['store_id' => $storeId];
     }
 
     /**
-     * KDF-Parameter fuer den Login. Fuer unbekannte Stores wird ein
+     * KDF-Parameter für den Login. Für unbekannte Stores wird ein
      * deterministischer Decoy-Salt geliefert, damit Existenz nicht
-     * per Salt-Abfrage aufzaehlbar ist.
+     * per Salt-Abfrage aufzählbar ist.
      */
     public function kdfParams(string $name, string $ip): array
     {

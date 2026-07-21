@@ -32,7 +32,7 @@ final class Database
         return self::$pdo;
     }
 
-    /** Nur fuer Tests: Verbindung verwerfen, damit ein anderer db_path greift. */
+    /** Nur für Tests: Verbindung verwerfen, damit ein anderer db_path greift. */
     public static function reset(): void
     {
         self::$pdo = null;

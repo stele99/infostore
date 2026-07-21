@@ -14,9 +14,9 @@ use App\Repository\ShareRepository;
 /**
  * Notfallzugriff (Sharing) mit serverseitigem Zustandsautomaten.
  *
- * Zustaende: active -> requested -> granted | denied; jeder Zustand -> revoked (Owner).
+ * Zustände: active -> requested -> granted | denied; jeder Zustand -> revoked (Owner).
  * Serverzeit ist allein massgeblich; der Client liefert nie Status oder Zeit.
- * Das verschluesselte Key-Paket wird erst im Zustand 'granted' herausgegeben,
+ * Das verschlüsselte Key-Paket wird erst im Zustand 'granted' herausgegeben,
  * und nur gegen Nachweis des Seed-Wissens (seed_auth, separat vom Wrap-Key
  * abgeleitet und serverseitig Argon2id-gehasht).
  */
@@ -43,7 +43,7 @@ final class ShareService
             throw ApiError::badRequest('seed_auth muss 32 Bytes Base64 sein.');
         }
         if (!filter_var($f['owner_mail'], FILTER_VALIDATE_EMAIL)) {
-            throw ApiError::badRequest('owner_mail ist keine gueltige E-Mail-Adresse.');
+            throw ApiError::badRequest('owner_mail ist keine gültige E-Mail-Adresse.');
         }
 
         $f['seed_auth_hash'] = \App\PasswordHash::hash($seedAuth);
@@ -64,13 +64,13 @@ final class ShareService
     {
         $share = $this->requireOwnerShare($storeId, $shareUid);
         if (!$this->shares->transition((int) $share['id'], 'requested', 'denied', ['decided_at' => Database::now()])) {
-            throw ApiError::conflict('Ablehnen ist nur fuer eine laufende Anfrage moeglich.');
+            throw ApiError::conflict('Ablehnen ist nur für eine laufende Anfrage möglich.');
         }
         $this->shares->logEvent((int) $share['id'], 'denied', 'by owner');
         return ['share_uid' => $shareUid, 'status' => 'denied'];
     }
 
-    /** Owner widerruft einen Share endgueltig - aus jedem Zustand, auch nach Grant. */
+    /** Owner widerruft einen Share endgültig - aus jedem Zustand, auch nach Grant. */
     public function revoke(int $storeId, string $shareUid): array
     {
         $share = $this->requireOwnerShare($storeId, $shareUid);
@@ -99,12 +99,12 @@ final class ShareService
         return $share;
     }
 
-    // ---- Empfaenger-Seite (unauthentifiziert, rate-limitiert) --------------
+    // ---- Empfänger-Seite (unauthentifiziert, rate-limitiert) --------------
 
     /**
-     * KDF-Parameter der Shares eines Stores, damit der Empfaenger seed_auth
-     * berechnen kann. Fuer unbekannte Stores wird ein deterministischer
-     * Decoy geliefert (keine Aufzaehlbarkeit von Stores oder Shares).
+     * KDF-Parameter der Shares eines Stores, damit der Empfänger seed_auth
+     * berechnen kann. Für unbekannte Stores wird ein deterministischer
+     * Decoy geliefert (keine Aufzählbarkeit von Stores oder Shares).
      */
     public function saltsForStore(string $storeName, string $ip): array
     {
@@ -125,12 +125,12 @@ final class ShareService
     }
 
     /**
-     * Zugriffsanfrage bzw. Poll des Empfaengers. Ein Aufruf mit gueltigem
+     * Zugriffsanfrage bzw. Poll des Empfängers. Ein Aufruf mit gültigem
      * seed_auth bewirkt je nach Zustand und Serverzeit:
      *   active           -> requested (Mail an Owner) bzw. granted bei delay=0
      *   requested        -> granted, sobald available_at erreicht ist; sonst Wartestatus
      *   granted          -> Key-Paket
-     *   denied/revoked   -> abschlaegiger Status ohne Key-Paket
+     *   denied/revoked   -> abschlägiger Status ohne Key-Paket
      */
     public function request(string $storeName, string $shareUid, string $seedAuthB64, string $ip): array
     {
@@ -148,7 +148,7 @@ final class ShareService
             if ($share !== null) {
                 $this->shares->logEvent((int) $share['id'], 'auth_failed');
             }
-            throw ApiError::unauthorized('Zugriff nicht moeglich.');
+            throw ApiError::unauthorized('Zugriff nicht möglich.');
         }
 
         $id = (int) $share['id'];
@@ -194,7 +194,7 @@ final class ShareService
         return ['status' => $share['status']];
     }
 
-    /** @return array Key-Paket; setzt ausserdem die Empfaenger-Session-Daten. */
+    /** @return array Key-Paket; setzt ausserdem die Empfänger-Session-Daten. */
     private function grantPackage(array $share): array
     {
         return [
@@ -209,9 +209,9 @@ final class ShareService
     private function notifyOwner(array $share, string $availableAt): void
     {
         $store = $share['store_name'] ?? ('#' . $share['store_id']);
-        $body = "Fuer deinen Info-Store \"$store\" wurde ein Notfallzugriff angefordert.\n\n"
+        $body = "Für deinen Info-Store \"$store\" wurde ein Notfallzugriff angefordert.\n\n"
             . "Der Zugriff wird am $availableAt (UTC) automatisch freigegeben.\n"
-            . "Wenn du das nicht moechtest, melde dich an und lehne die Anfrage ab oder widerrufe den Share.\n";
+            . "Wenn du das nicht möchtest, melde dich an und lehne die Anfrage ab oder widerrufe den Share.\n";
         $sent = $this->mailer->send((string) $share['owner_mail'], 'Info-Store: Notfallzugriff angefordert', $body);
         $this->shares->logEvent((int) $share['id'], $sent ? 'owner_notified' : 'owner_notify_failed');
     }

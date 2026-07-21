@@ -6,7 +6,7 @@ namespace App\Http;
 
 /**
  * Fachlicher Fehler, der als JSON-Fehlerantwort mit korrektem HTTP-Code endet.
- * Interne Details gehoeren ins Log, nie in die Message.
+ * Interne Details gehören ins Log, nie in die Message.
  */
 final class ApiError extends \RuntimeException
 {
@@ -18,7 +18,7 @@ final class ApiError extends \RuntimeException
         parent::__construct($message);
     }
 
-    public static function badRequest(string $msg = 'Ungueltige Anfrage.'): self
+    public static function badRequest(string $msg = 'Ungültige Anfrage.'): self
     {
         return new self(400, 'bad_request', $msg);
     }
@@ -43,7 +43,7 @@ final class ApiError extends \RuntimeException
         return new self(409, 'conflict', $msg);
     }
 
-    public static function tooMany(string $msg = 'Zu viele Anfragen. Bitte spaeter erneut versuchen.'): self
+    public static function tooMany(string $msg = 'Zu viele Anfragen. Bitte später erneut versuchen.'): self
     {
         return new self(429, 'rate_limited', $msg);
     }

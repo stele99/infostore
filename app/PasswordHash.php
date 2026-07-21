@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App;
 
 /**
- * Argon2id-Hashing (libsodium) fuer Auth-Keys und Seed-Nachweise.
- * Limits sind fuer Tests konfigurierbar; Produktion nutzt MODERATE.
+ * Argon2id-Hashing (libsodium) für Auth-Keys und Seed-Nachweise.
+ * Limits sind für Tests konfigurierbar; Produktion nutzt MODERATE.
  */
 final class PasswordHash
 {

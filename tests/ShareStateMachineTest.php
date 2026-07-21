@@ -52,7 +52,7 @@ t('Shares: falscher Seed-Nachweis liefert 401 und kein Key-Paket', function () {
     assert_api_error(401, fn () => $svc->request('store.owner', $uid, seedAuthB64('falsch'), '1.1.1.1'));
 });
 
-t('Shares: delay=0 gewaehrt sofort mit Key-Paket', function () {
+t('Shares: delay=0 gewährt sofort mit Key-Paket', function () {
     $store = shareStore();
     $svc = makeShares();
     $uid = createTestShare($svc, $store, 0);
@@ -103,7 +103,7 @@ t('Shares: Owner kann laufende Anfrage ablehnen; danach kein Zugriff', function 
     assert_true(!isset($r['wrapped_key']));
 });
 
-t('Shares: Ablehnen ist nur aus requested moeglich', function () {
+t('Shares: Ablehnen ist nur aus requested möglich', function () {
     $store = shareStore();
     $svc = makeShares();
     $uid = createTestShare($svc, $store, 2);
@@ -131,7 +131,7 @@ t('Shares: fremder Store kann weder ablehnen noch widerrufen (404)', function ()
     assert_api_error(404, fn () => $svc->revoke(2, $uid));
 });
 
-t('Shares: Salt-Abfrage liefert Decoy fuer Stores ohne Shares', function () {
+t('Shares: Salt-Abfrage liefert Decoy für Stores ohne Shares', function () {
     shareStore();
     $svc = makeShares();
     $a = $svc->saltsForStore('unbekannt.store', '1.1.1.1');

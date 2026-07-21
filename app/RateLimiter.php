@@ -22,7 +22,7 @@ final class RateLimiter
         return hash_hmac('sha256', $subject, Config::appSecret());
     }
 
-    /** Wirft 429, wenn das Limit im Fenster erreicht ist; zaehlt den Versuch. */
+    /** Wirft 429, wenn das Limit im Fenster erreicht ist; zählt den Versuch. */
     public function hit(string $kind, string $subject, ?int $max = null, ?int $windowSeconds = null): void
     {
         $max = $max ?? (int) Config::get('login_max_attempts');
@@ -41,14 +41,14 @@ final class RateLimiter
         $stm = $this->db->prepare('INSERT INTO login_attempts (kind, subject, created_at) VALUES (?, ?, ?)');
         $stm->execute([$kind, $subject, Database::now()]);
 
-        // Gelegentliches Aufraeumen alter Eintraege
+        // Gelegentliches Aufräumen alter Einträge
         if (random_int(0, 50) === 0) {
             $stm = $this->db->prepare('DELETE FROM login_attempts WHERE created_at < ?');
             $stm->execute([gmdate('Y-m-d\TH:i:s\Z', time() - 86400)]);
         }
     }
 
-    /** Erfolgsfall: Fehlversuche fuer das Subjekt zuruecksetzen. */
+    /** Erfolgsfall: Fehlversuche für das Subjekt zurücksetzen. */
     public function clear(string $kind, string $subject): void
     {
         $stm = $this->db->prepare('DELETE FROM login_attempts WHERE kind = ? AND subject = ?');

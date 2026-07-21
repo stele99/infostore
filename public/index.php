@@ -37,7 +37,7 @@ header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
                     <label for="login-password">Passwort</label>
                     <input type="password" id="login-password" name="password"
                         autocomplete="current-password" minlength="12" required>
-                    <small>Mindestens 12 Zeichen. Das Passwort verlaesst den Browser nie -
+                    <small>Mindestens 12 Zeichen. Das Passwort verlässt den Browser nie -
                         ohne Passwort sind die Daten unwiederbringlich verloren.</small>
                 </div>
                 <div class="button-row">
@@ -49,7 +49,7 @@ header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
         </div>
     </section>
 
-    <!-- ================= Notfallzugriff (Empfaenger) ================= -->
+    <!-- ================= Notfallzugriff (Empfänger) ================= -->
     <section id="view-shareaccess" class="view" hidden>
         <div class="card">
             <h1>Notfallzugriff</h1>
@@ -62,12 +62,12 @@ header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
                     <input type="text" id="sa-store" minlength="5" maxlength="64" required>
                 </div>
                 <div class="form-group">
-                    <label for="sa-seed">Seed-Phrase (12 Woerter, durch Leerzeichen getrennt)</label>
+                    <label for="sa-seed">Seed-Phrase (12 Wörter, durch Leerzeichen getrennt)</label>
                     <textarea id="sa-seed" rows="3" required spellcheck="false" autocomplete="off"></textarea>
                 </div>
                 <div class="button-row">
-                    <button type="submit" class="primary">Zugriff anfordern / pruefen</button>
-                    <button type="button" class="linklike" id="bt-sa-back">Zurueck zum Login</button>
+                    <button type="submit" class="primary">Zugriff anfordern / prüfen</button>
+                    <button type="button" class="linklike" id="bt-sa-back">Zurück zum Login</button>
                 </div>
             </form>
             <p id="sa-status" class="notice" hidden aria-live="polite"></p>
@@ -85,7 +85,7 @@ header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
         </header>
         <div class="main-layout">
             <aside class="sidebar">
-                <input type="search" id="entry-search" placeholder="Suchen..." aria-label="Eintraege durchsuchen">
+                <input type="search" id="entry-search" placeholder="Suchen..." aria-label="Einträge durchsuchen">
                 <ul id="entry-list" class="entry-list"></ul>
             </aside>
             <div class="editor-area">
@@ -95,7 +95,7 @@ header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
                 <div class="button-row">
                     <button class="primary" id="bt-save">Speichern</button>
                     <button id="bt-new">Neuer Eintrag</button>
-                    <button class="danger" id="bt-delete">Loeschen</button>
+                    <button class="danger" id="bt-delete">Löschen</button>
                 </div>
             </div>
         </div>
@@ -118,21 +118,73 @@ header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
                     <input type="number" id="share-delay" min="0" max="8760" value="72" required>
                 </div>
                 <div class="form-group">
-                    <label>Seed-Phrase (einmalig anzeigen und sicher uebergeben!)</label>
+                    <label>Seed-Phrase (einmalig anzeigen und sicher übergeben!)</label>
                     <output id="share-seed" class="seedbox"></output>
                     <div class="button-row">
                         <button type="button" id="bt-seed-new">Neue Phrase erzeugen</button>
+                        <button type="button" id="bt-seed-print">Für Notfallmappe drucken</button>
                     </div>
                 </div>
                 <div class="button-row">
                     <button type="submit" class="primary">Share einrichten</button>
-                    <button type="button" id="bt-shares-back">Zurueck</button>
+                    <button type="button" id="bt-shares-back">Zurück</button>
                 </div>
             </form>
             <h2>Bestehende Shares</h2>
             <ul id="share-list" class="share-list"></ul>
         </div>
     </section>
+
+    <!-- ================= Druckvorlage Notfallzugriff (nur beim Drucken sichtbar) ================= -->
+    <div id="print-sheet">
+        <h1>Notfallzugriff – Secure Info Store</h1>
+        <p>
+            Diese Seite enthält die Zugangsdaten für einen Notfallzugriff auf einen
+            verschlüsselten Info-Store. Bewahre sie so sicher auf wie ein Passwort –
+            getrennt von digitalen Kopien, z.&nbsp;B. in einem verschlossenen Umschlag
+            oder Safe.
+        </p>
+        <table>
+            <tr>
+                <th>Store-ID</th>
+                <td id="ps-store"></td>
+            </tr>
+            <tr>
+                <th>Adresse</th>
+                <td id="ps-url"></td>
+            </tr>
+            <tr>
+                <th>Wartezeit bis Freigabe</th>
+                <td id="ps-delay"></td>
+            </tr>
+            <tr>
+                <th>Benachrichtigung an</th>
+                <td id="ps-mail"></td>
+            </tr>
+            <tr>
+                <th>Ausgestellt am</th>
+                <td id="ps-date"></td>
+            </tr>
+        </table>
+        <h2>Seed-Phrase (12 Wörter, in dieser Reihenfolge)</h2>
+        <ol id="ps-seed-list" class="ps-seed-list"></ol>
+        <h2>Anleitung für den Notfallzugriff</h2>
+        <ol>
+            <li>Im Browser die oben stehende Adresse aufrufen.</li>
+            <li>Auf der Anmeldeseite den Link „Notfallzugriff mit Seed-Phrase“ anklicken.</li>
+            <li>Store-ID sowie die 12 Wörter oben eingeben (Reihenfolge beachten, durch Leerzeichen getrennt).</li>
+            <li>
+                Ist eine Wartezeit hinterlegt, wird der Inhaber per E-Mail benachrichtigt
+                und kann den Zugriff ablehnen. Ohne Widerspruch wird der Zugriff nach
+                Ablauf der Wartezeit automatisch freigeschaltet.
+            </li>
+        </ol>
+        <p class="ps-warning">
+            Wichtig: Diese Phrase gewährt Lesezugriff auf alle Notizen dieses Stores.
+            Wird ein neuer Share eingerichtet oder dieser widerrufen, verliert dieser
+            Ausdruck seine Gültigkeit.
+        </p>
+    </div>
 
     <div class="statusbar">
         <div id="statusmsg" role="status" aria-live="polite" hidden></div>

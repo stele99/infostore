@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /**
  * Dependency-freier Testrunner: php tests/run.php
- * Jeder Test laeuft gegen eine frische SQLite-Datei; Argon2id nutzt
+ * Jeder Test läuft gegen eine frische SQLite-Datei; Argon2id nutzt
  * Minimal-Limits, damit die Suite schnell bleibt.
  */
 
@@ -26,7 +26,7 @@ Config::override([
     'secret_file'     => "$tmpBase/app_secret",
     'mail_dir'        => "$tmpBase/mail",
     'log_dir'         => "$tmpBase/log",
-    // libsodium-Minimalwerte (Argon2id): opslimit 1, memlimit 8 KiB - nur fuer Tests!
+    // libsodium-Minimalwerte (Argon2id): opslimit 1, memlimit 8 KiB - nur für Tests!
     'pwhash_opslimit' => 1,
     'pwhash_memlimit' => 8192,
 ]);

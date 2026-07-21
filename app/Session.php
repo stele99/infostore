@@ -8,7 +8,7 @@ use App\Http\ApiError;
 
 /**
  * Sichere PHP-Session: HttpOnly, SameSite=Lax, Secure bei HTTPS, strict mode.
- * Store-Identitaet und Rolle kommen ausschliesslich aus der Session,
+ * Store-Identität und Rolle kommen ausschliesslich aus der Session,
  * nie aus Request-Daten.
  */
 final class Session
@@ -32,7 +32,7 @@ final class Session
         ]);
     }
 
-    /** Nach erfolgreichem Login: Session-ID rotieren und Identitaet setzen. */
+    /** Nach erfolgreichem Login: Session-ID rotieren und Identität setzen. */
     public static function login(int $storeId, string $role): void
     {
         self::start();
@@ -87,7 +87,7 @@ final class Session
     {
         $id = self::requireStoreId();
         if (self::role() !== self::ROLE_OWNER) {
-            throw ApiError::forbidden('Nur der Inhaber darf diese Aktion ausfuehren.');
+            throw ApiError::forbidden('Nur der Inhaber darf diese Aktion ausführen.');
         }
         return $id;
     }
@@ -101,13 +101,13 @@ final class Session
         return $_SESSION['csrf'];
     }
 
-    /** CSRF-Pruefung fuer zustandsaendernde Requests mit bestehender Session. */
+    /** CSRF-Prüfung für zustandsändernde Requests mit bestehender Session. */
     public static function checkCsrf(?string $token): void
     {
         self::start();
         $expected = $_SESSION['csrf'] ?? '';
         if ($expected === '' || $token === null || !hash_equals($expected, $token)) {
-            throw ApiError::forbidden('CSRF-Token fehlt oder ist ungueltig.');
+            throw ApiError::forbidden('CSRF-Token fehlt oder ist ungültig.');
         }
     }
 }

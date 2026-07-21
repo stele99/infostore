@@ -9,7 +9,7 @@ use App\Http\ApiError;
 use App\Repository\EntryRepository;
 
 /**
- * Use-Cases fuer Eintraege. Die store_id kommt immer aus der Session
+ * Use-Cases für Einträge. Die store_id kommt immer aus der Session
  * (Aufrufer), nie aus dem Request. Fremde UIDs antworten 404, damit kein
  * Existenz-Orakel entsteht.
  */
@@ -39,7 +39,7 @@ final class EntryService
     }
 
     /**
-     * Upsert mit atomarer Eigentumspruefung und optionaler Konflikterkennung
+     * Upsert mit atomarer Eigentumsprüfung und optionaler Konflikterkennung
      * (expected_updated_at vom Client = Stand beim Laden).
      */
     public function save(int $storeId, string $entryUid, int $cryptoVersion, array $fields, ?string $expectedUpdatedAt): array
@@ -52,14 +52,14 @@ final class EntryService
         if ($owner === null) {
             $max = (int) Config::get('max_entries_per_store');
             if ($this->entries->countForStore($storeId) >= $max) {
-                throw ApiError::conflict("Limit von $max Eintraegen erreicht.");
+                throw ApiError::conflict("Limit von $max Einträgen erreicht.");
             }
             $this->entries->insert($storeId, $entryUid, $cryptoVersion, $fields);
         } else {
             if ($expectedUpdatedAt !== null) {
                 $current = $this->entries->findForStore($storeId, $entryUid);
                 if ($current !== null && $current['updated_at'] !== $expectedUpdatedAt) {
-                    throw ApiError::conflict('Der Eintrag wurde zwischenzeitlich geaendert.');
+                    throw ApiError::conflict('Der Eintrag wurde zwischenzeitlich geändert.');
                 }
             }
             if (!$this->entries->update($storeId, $entryUid, $cryptoVersion, $fields)) {

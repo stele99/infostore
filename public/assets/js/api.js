@@ -35,7 +35,7 @@ async function call(method, path, body) {
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
-    throw new ApiException(0, "network", "Netzwerkfehler - bitte Verbindung pruefen.", "");
+    throw new ApiException(0, "network", "Netzwerkfehler - bitte Verbindung prüfen.", "");
   }
   let payload = null;
   try {

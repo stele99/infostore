@@ -30,7 +30,7 @@ final class Request
         return isset($_SERVER[$key]) ? (string) $_SERVER[$key] : null;
     }
 
-    /** JSON-Body lesen: nur application/json, Groessenlimit, keine stillen Fehler. */
+    /** JSON-Body lesen: nur application/json, Größenlimit, keine stillen Fehler. */
     public function json(): array
     {
         if ($this->json !== null) {
@@ -51,12 +51,12 @@ final class Request
         }
         $data = json_decode($raw, true);
         if (!is_array($data)) {
-            throw ApiError::badRequest('Body ist kein gueltiges JSON-Objekt.');
+            throw ApiError::badRequest('Body ist kein gültiges JSON-Objekt.');
         }
         return $this->json = $data;
     }
 
-    /** Pflichtfeld als String mit Laengenbegrenzung. */
+    /** Pflichtfeld als String mit Längenbegrenzung. */
     public function str(string $field, int $maxLen, bool $required = true): string
     {
         $data = $this->json();
@@ -68,7 +68,7 @@ final class Request
             return '';
         }
         if (!is_string($val) || strlen($val) > $maxLen) {
-            throw ApiError::badRequest("Feld '$field' ist ungueltig.");
+            throw ApiError::badRequest("Feld '$field' ist ungültig.");
         }
         return $val;
     }
@@ -78,18 +78,18 @@ final class Request
         $data = $this->json();
         $val = $data[$field] ?? null;
         if (!is_int($val) || $val < $min || $val > $max) {
-            throw ApiError::badRequest("Feld '$field' ist ungueltig.");
+            throw ApiError::badRequest("Feld '$field' ist ungültig.");
         }
         return $val;
     }
 
-    /** Base64-Feld validieren und dekodierte Laenge pruefen. */
+    /** Base64-Feld validieren und dekodierte Länge prüfen. */
     public function b64(string $field, int $minBytes, int $maxBytes): string
     {
         $val = $this->str($field, (int) ceil($maxBytes / 3) * 4 + 8);
         $bin = base64_decode($val, true);
         if ($bin === false || strlen($bin) < $minBytes || strlen($bin) > $maxBytes) {
-            throw ApiError::badRequest("Feld '$field' ist kein gueltiger Base64-Wert.");
+            throw ApiError::badRequest("Feld '$field' ist kein gültiger Base64-Wert.");
         }
         return $val;
     }
@@ -98,7 +98,7 @@ final class Request
     {
         $val = $this->str($field, 36);
         if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $val)) {
-            throw ApiError::badRequest("Feld '$field' ist keine gueltige UUID.");
+            throw ApiError::badRequest("Feld '$field' ist keine gültige UUID.");
         }
         return $val;
     }

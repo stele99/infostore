@@ -42,17 +42,17 @@ t('Entries: Anlegen, Lesen, Liste nur im eigenen Store', function () {
     assert_api_error(404, fn () => $svc->get($b, UID_A), 'Fremder Store darf nicht lesen');
 });
 
-t('Entries: fremde UID kann nicht ueberschrieben oder uebernommen werden', function () {
+t('Entries: fremde UID kann nicht überschrieben oder übernommen werden', function () {
     [$a, $b] = twoStores();
     $svc = makeEntries();
     $svc->save($a, UID_A, 1, fields(), null);
 
-    assert_api_error(404, fn () => $svc->save($b, UID_A, 1, fields('boese'), null));
+    assert_api_error(404, fn () => $svc->save($b, UID_A, 1, fields('böse'), null));
     $row = $svc->get($a, UID_A);
-    assert_eq(base64_encode('titel'), $row['title_ct'], 'Inhalt darf nicht veraendert sein');
+    assert_eq(base64_encode('titel'), $row['title_ct'], 'Inhalt darf nicht verändert sein');
 });
 
-t('Entries: fremde UID kann nicht geloescht werden', function () {
+t('Entries: fremde UID kann nicht gelöscht werden', function () {
     [$a, $b] = twoStores();
     $svc = makeEntries();
     $svc->save($a, UID_A, 1, fields(), null);
@@ -63,7 +63,7 @@ t('Entries: fremde UID kann nicht geloescht werden', function () {
     assert_eq(0, $svc->list($a, 100, 0)['total']);
 });
 
-t('Entries: Konflikterkennung ueber expected_updated_at', function () {
+t('Entries: Konflikterkennung über expected_updated_at', function () {
     [$a] = twoStores();
     $svc = makeEntries();
     $svc->save($a, UID_A, 1, fields(), null);

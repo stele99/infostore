@@ -8,7 +8,7 @@ use App\Config;
 
 /**
  * Default-Transport: schreibt Mails als .eml-Dateien nach var/mail.
- * Fuer echten Versand INFOSTORE_MAIL=native setzen (PHP mail()/Sendmail).
+ * Für echten Versand INFOSTORE_MAIL=native setzen (PHP mail()/Sendmail).
  */
 final class FileMailer implements Mailer
 {

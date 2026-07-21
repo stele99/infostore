@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Migrator;
 
-t('Migration: frische Datenbank wird vollstaendig aufgebaut', function () {
+t('Migration: frische Datenbank wird vollständig aufgebaut', function () {
     $db = freshDb();
     $tables = $db->query("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
         ->fetchAll(PDO::FETCH_COLUMN);
@@ -13,7 +13,7 @@ t('Migration: frische Datenbank wird vollstaendig aufgebaut', function () {
     }
 });
 
-t('Migration: laeuft nur einmal (idempotent)', function () {
+t('Migration: läuft nur einmal (idempotent)', function () {
     $db = freshDb();
     Migrator::migrate($db);
     Migrator::migrate($db);
@@ -34,7 +34,7 @@ t('Schema: Constraints greifen (Status-Check, Unique-UID)', function () {
     } catch (PDOException) {
         $threw = true;
     }
-    assert_true($threw, 'Ungueltiger Share-Status haette scheitern muessen');
+    assert_true($threw, 'Ungültiger Share-Status hätte scheitern müssen');
 
     $db->exec("INSERT INTO entries (store_id, entry_uid, title_ct, title_iv, body_ct, body_iv, created_at, updated_at)
                VALUES (1, '11111111-1111-4111-8111-111111111111', 't', 'i', 'b', 'i', 'x', 'x')");
@@ -45,5 +45,5 @@ t('Schema: Constraints greifen (Status-Check, Unique-UID)', function () {
     } catch (PDOException) {
         $threw = true;
     }
-    assert_true($threw, 'Doppelte entry_uid haette scheitern muessen');
+    assert_true($threw, 'Doppelte entry_uid hätte scheitern müssen');
 });

@@ -49,7 +49,7 @@ final class EntryRepository
         return $row === false ? null : $row;
     }
 
-    /** Liefert die Besitzer-Store-ID einer UID (fuer Ownership-Pruefung), sonst null. */
+    /** Liefert die Besitzer-Store-ID einer UID (für Ownership-Prüfung), sonst null. */
     public function ownerOf(string $entryUid): ?int
     {
         $stm = $this->db->prepare('SELECT store_id FROM entries WHERE entry_uid = ?');

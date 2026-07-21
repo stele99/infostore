@@ -2,10 +2,10 @@
  * Client-Kryptografie auf Basis der Web Crypto API.
  *
  * Format-Version 1:
- *   KDF:    PBKDF2-SHA256 (600k Iterationen Default), Salt 16 Byte zufaellig
+ *   KDF:    PBKDF2-SHA256 (600k Iterationen Default), Salt 16 Byte zufällig
  *   Split:  HKDF-SHA256 aus dem Master-Secret; info "auth" (Server-Login),
  *           info "enc" (Content-Key) - der Server sieht nur den Auth-Key.
- *   AEAD:   AES-256-GCM, 12-Byte-Nonce frisch aus einem CSPRNG je Verschluesselung,
+ *   AEAD:   AES-256-GCM, 12-Byte-Nonce frisch aus einem CSPRNG je Verschlüsselung,
  *           AAD bindet Version, Store, Entry-UID und Feldname.
  */
 
@@ -40,7 +40,7 @@ export async function deriveMasterBits(secret, saltBytes, iterations) {
   return new Uint8Array(bits);
 }
 
-/** HKDF-Ableitung mit Domaenentrennung ueber info. */
+/** HKDF-Ableitung mit Domänentrennung über info. */
 export async function hkdf(masterBits, info, length = 32) {
   const key = await crypto.subtle.importKey("raw", masterBits, "HKDF", false, ["deriveBits"]);
   const bits = await crypto.subtle.deriveBits(
@@ -57,8 +57,8 @@ export async function importAesKey(rawBytes) {
 }
 
 /**
- * Master-Secret -> { authKeyB64 (fuer Server), contentKey (CryptoKey),
- * contentKeyRaw (fuer Share-Wrapping; nur im Speicher halten!) }.
+ * Master-Secret -> { authKeyB64 (für Server), contentKey (CryptoKey),
+ * contentKeyRaw (für Share-Wrapping; nur im Speicher halten!) }.
  */
 export async function splitKeys(masterBits) {
   const authBits = await hkdf(masterBits, "infostore/v1/auth");
@@ -99,7 +99,7 @@ export async function decryptBytes(key, ctB64, ivB64, aad) {
   return new Uint8Array(pt);
 }
 
-/** AAD fuer Entry-Felder: bindet Version, Store, Eintrag und Feld. */
+/** AAD für Entry-Felder: bindet Version, Store, Eintrag und Feld. */
 export function entryAad(store, entryUid, field) {
   return `infostore|v${CRYPTO_VERSION}|${store}|${entryUid}|${field}`;
 }
@@ -122,19 +122,19 @@ export function normalizeSeed(text) {
 }
 
 /**
- * 12 Woerter gleichverteilt aus einer 2048er-Liste (11 Bit je Wort, ~132 Bit
+ * 12 Wörter gleichverteilt aus einer 2048er-Liste (11 Bit je Wort, ~132 Bit
  * Entropie). 2048 ist eine Zweierpotenz - die Maskierung ist verzerrungsfrei.
  */
 export function generateSeedWords(wordlist, count = 12) {
   if (wordlist.length !== 2048) {
-    throw new Error("Wortliste muss exakt 2048 Woerter haben.");
+    throw new Error("Wortliste muss exakt 2048 Wörter haben.");
   }
   const values = new Uint16Array(count);
   crypto.getRandomValues(values);
   return Array.from(values, (v) => wordlist[v & 2047]);
 }
 
-/** Seed-Phrase -> Wrap-Key + Auth-Nachweis (getrennte HKDF-Domaenen). */
+/** Seed-Phrase -> Wrap-Key + Auth-Nachweis (getrennte HKDF-Domänen). */
 export async function deriveSeedKeys(phrase, saltBytes, iterations) {
   const master = await deriveMasterBits(normalizeSeed(phrase), saltBytes, iterations);
   const wrapBits = await hkdf(master, "infostore/v1/share-wrap");

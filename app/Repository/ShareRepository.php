@@ -55,7 +55,7 @@ final class ShareRepository
         return $row === false ? null : $row;
     }
 
-    /** Aktive KDF-Parameter fuer einen Store-Namen (Recipient-Flow, vor Auth). */
+    /** Aktive KDF-Parameter für einen Store-Namen (Recipient-Flow, vor Auth). */
     public function saltsForStoreName(string $storeName): array
     {
         $stm = $this->db->prepare(
@@ -80,8 +80,8 @@ final class ShareRepository
     }
 
     /**
-     * Atomarer Statusuebergang: schreibt nur, wenn der Ist-Status noch stimmt.
-     * @param array $set zusaetzliche Spalten (nur interne Allowlist)
+     * Atomarer Statusübergang: schreibt nur, wenn der Ist-Status noch stimmt.
+     * @param array $set zusätzliche Spalten (nur interne Allowlist)
      */
     public function transition(int $shareId, string $fromStatus, string $toStatus, array $set = []): bool
     {
