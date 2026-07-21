@@ -1,0 +1,308 @@
+@viewport {
+  user-zoom: fixed; /* statt user-scalable=no */
+  min-zoom: 0.5; /* statt minimum-scale=0.5 */
+  max-zoom: 2; /* statt maximum-scale=2 */
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  background: #f3f4f6;
+  margin: 0;
+  height: 100vh;
+  display: grid;
+}
+
+.login-container {
+  background: #ffffff;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  max-width: 400px;
+  margin: auto;
+  margin-top: 100px;
+
+  width: 90%;
+}
+
+.login-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.ql-container {
+  height: calc(100vh - 2em - 4em - 220px) !important;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #666;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 1.1em;
+}
+
+.form-group input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.login-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #0056b3;
+}
+
+.form-group a {
+  margin-top: 10px;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.form-group a:hover {
+  text-decoration: underline;
+}
+
+#menutoggle {
+  display: none;
+  font-size: 1em;
+}
+
+.file-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .login-container {
+    width: 95%;
+    padding: 15px;
+  }
+
+  #menutoggle {
+    display: block;
+    font-size: 1em;
+    z-index: 99;
+    position: fixed;
+    width: 90%;
+  }
+  .file-list {
+    display: none;
+    list-style-type: none;
+    padding: 0;
+    position: fixed;
+    margin: 0;
+    background: #f3f4f6;
+    width: 85%;
+    padding: 10px;
+    z-index: 90;
+    border: solid 1px grey;
+    border-top: 0px;
+    top: 42px;
+  }
+
+  .ql-container {
+    height: calc(100vh - 2em - 4em - 340px) !important;
+  }
+}
+.show-file-list {
+  display: block;
+}
+
+#edit {
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
+  margin-bottom: 4em;
+}
+
+.sidebar {
+  width: 300px;
+  background: #f4f4f4;
+  border-right: 1px solid #ccc;
+  padding: 10px 20px;
+  box-sizing: border-box;
+}
+
+.sidebar h2 {
+  text-align: center;
+  color: #333;
+}
+
+.file-list li,
+.filemenu {
+  padding: 5px 10px 5px 10px;
+  border: 1px solid #ccc;
+  margin: 5px 0;
+  border-radius: 4px;
+  transition: background 0.3s;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.file-list li:hover {
+  background: #eaeaea;
+}
+
+.editor-container {
+  flex-grow: 1;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: none;
+  font-size: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.preview {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  margin-top: 10px;
+  background: #fff;
+  height: 200px;
+  overflow-y: auto;
+}
+
+@media (max-width: 600px) {
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #ccc;
+    margin-top: 0px;
+    padding-top: 5px;
+    height: 50px;
+    position: fixed;
+    z-index: 80;
+    top: 0px;
+  }
+  .editor-container {
+    margin-top: 60px;
+  }
+  .sidebar h2 {
+    display: none;
+  }
+  .editor-container {
+    padding: 10px;
+  }
+  #edit {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+#e_data {
+  background-color: #fff;
+  font-size: 1em;
+}
+
+.form-button {
+  padding: 5px;
+  border: 1px solid #ccc;
+  margin: 5px 0;
+  border-radius: 4px;
+  transition: background 0.3s;
+  cursor: pointer;
+  min-width: 10em;
+}
+.form-button:hover {
+  background: #eaeaea;
+}
+
+.link {
+  cursor: pointer;
+  color: #0087a7;
+  text-decoration: underline;
+}
+#btlogout {
+  width: 100%;
+  text-align: center;
+  font-size: 0.9em;
+}
+
+#extdata {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 2fr 2fr;
+  font-size: 0.8em;
+  color: grey;
+  text-shadow: -1px -1px 0px #ffffff;
+  padding: 5px;
+  margin-bottom: 0.5em;
+}
+
+.statusbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #e0e1e3;
+  color: #666;
+  padding: 10px 0;
+  height: 1.2em;
+  display: grid;
+  grid-template-columns: 1fr 4fr;
+  align-items: center;
+  justify-items: start;
+}
+.statuslinks {
+  padding-left: 10px;
+  min-width: 180px;
+}
+.statusbuttons {
+  padding: 2px 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background: #f3f4f6;
+  cursor: pointer;
+  display: inline;
+}
+.statusbuttons:hover {
+  background-color: #e0e1e3;
+}
+
+#btshare {
+  background-image: url(data:image/svg+xml;utf8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%0A%0A%3C!--%20Uploaded%20to%3A%20SVG%20Repo%2C%20www.svgrepo.com%2C%20Generator%3A%20SVG%20Repo%20Mixer%20Tools%20--%3E%0A%3Csvg%20width%3D%22800px%22%20height%3D%22800px%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cg%20id%3D%22Communication%20%2F%20Share_iOS_Export%22%3E%0A%3Cpath%20id%3D%22Vector%22%20d%3D%22M9%206L12%203M12%203L15%206M12%203V13M7.00023%2010C6.06835%2010%205.60241%2010%205.23486%2010.1522C4.74481%2010.3552%204.35523%2010.7448%204.15224%2011.2349C4%2011.6024%204%2012.0681%204%2013V17.8C4%2018.9201%204%2019.4798%204.21799%2019.9076C4.40973%2020.2839%204.71547%2020.5905%205.0918%2020.7822C5.5192%2021%206.07899%2021%207.19691%2021H16.8036C17.9215%2021%2018.4805%2021%2018.9079%2020.7822C19.2842%2020.5905%2019.5905%2020.2839%2019.7822%2019.9076C20%2019.4802%2020%2018.921%2020%2017.8031V13C20%2012.0681%2019.9999%2011.6024%2019.8477%2011.2349C19.6447%2010.7448%2019.2554%2010.3552%2018.7654%2010.1522C18.3978%2010%2017.9319%2010%2017%2010%22%20stroke%3D%22%23000000%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%3C%2Fg%3E%0A%3C%2Fsvg%3E);
+  background-size: 18px;
+  background-repeat: no-repeat;
+  padding-left: 25px;
+  background-position-x: 3px;
+  background-position-y: 1px;
+}
+
+.seed {
+  margin: 5px;
+  width: auto;
+}
+.form-big input {
+  font-size: 1.2em;
+  text-align: center;
+}
