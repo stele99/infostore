@@ -2,6 +2,18 @@
 
 > Verifikationsstand: 2026-07-21, gegen Commit `e1eec98` und die vorhandene `.data/data.sqlite3` geprueft. Alle Datei- und Zeilenangaben wurden gegen den Code bestaetigt; Korrekturen und Ergaenzungen aus dieser Pruefung sind eingearbeitet (siehe H-7 und "Funktionale Defekte").
 
+## Entscheidungen und Umsetzungsstand (2026-07-21)
+
+Auf Basis dieses Plans wurde der Neuaufbau auf dem Branch `refactor/secure-rewrite` umgesetzt. Getroffene Entscheidungen:
+
+1. **Frischer Start statt Datenmigration.** Der Altbestand enthielt nur Testdaten; Legacy-Decoder und Re-Encrypt-Dialog (Teile von Phase 3) entfallen. Der Altcode wurde vollstaendig entfernt und ist ueber die Git-Historie verfuegbar.
+2. **Split-Key-Authentifizierung statt OPAQUE.** Fuer PHP existiert keine etablierte, extern gepruefte OPAQUE-Serverbibliothek. Umgesetzt ist das Bitwarden-Modell: PBKDF2-SHA256 im Browser -> HKDF-Split in `auth`-Key (zum Server, dort Argon2id) und `enc`-Key (nur Browser-Speicher). Damit verlaesst ein KDF-abgeleiteter Auth-Wert den Browser - eine dokumentierte Abweichung von der strikten PAKE-Forderung dieses Plans, industrieerprobt und versioniert, sodass ein spaeterer PAKE-Umstieg moeglich bleibt.
+3. **Browser-KDF ist PBKDF2-SHA256 (600k, versioniert) statt Argon2id.** Grund: Entscheidung fuer Vanilla-ES-Module ohne Build-/Wasm-Lieferkette; die Web Crypto API bietet kein Argon2. `kdf_version` ist gespeichert, ein Upgrade-Pfad bleibt offen.
+4. **Sharing wurde direkt mit neu gebaut** (Phase 5 im Umfang): serverseitiger Zustandsautomat `active -> requested -> granted|denied`, Widerruf jederzeit, Serverzeit massgeblich, Key-Paket nur im Zustand `granted` gegen Seed-Nachweis (getrennte HKDF-Domaenen fuer Wrap und Auth), Audit-Events, Mail-Adapter (Datei-Transport als Default, `INFOSTORE_MAIL=native` fuer echten Versand).
+5. **Frontend als Vanilla-ES-Module ohne Build-Schritt**; Quill lokal vendored, Inhalte als Quill-Delta (kein HTML-Sink), strikte CSP ohne externe Quellen.
+
+Damit sind die Phasen 0 und 2-5 im Code umgesetzt (Phase 1 teilweise: Migrationen, Testsuite `php tests/run.php`, getrennte Konfiguration; bewusst ohne Composer/CI). **Offen bleiben:** Deployment-seitige Phase-0-Punkte (Pruefung, ob `sqladmin.php` je erreichbar war; Produktions-Webroot auf `public/` stellen; TLS/HSTS), Browser-E2E-Tests, CI sowie der externe Kryptografie-/Penetrationstest vor einem Sicherheitsversprechen (Phase 6).
+
 ## Zweck und Befund
 
 Diese Analyse umfasst den gesamten eigenen PHP-, JavaScript-, HTML- und CSS-Code sowie die im Checkout vorhandenen, ignorierten Laufzeitartefakte. Die minifizierten Bibliotheken `js/ext/crypto-js.min.js` und `js/ext/jquery-min.js` wurden nur als Fremdcode identifiziert, nicht Zeile fuer Zeile auditiert.

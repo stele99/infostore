@@ -1,0 +1,11 @@
+# Faellt der DocumentRoot auf das Repo-Wurzelverzeichnis (Shared Hosting),
+# wird alles nach public/ gelenkt. Empfohlen ist, den DocumentRoot direkt
+# auf public/ zu zeigen - dann greift nur public/.htaccess.
+RewriteEngine On
+
+# Interne Verzeichnisse niemals ausliefern
+RewriteRule ^(app|var|migrations|config|tests|docs)(/|$) - [R=404,L]
+RewriteRule ^\.(git|data) - [R=404,L]
+
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteRule ^(.*)$ public/$1 [L]

@@ -2,19 +2,21 @@
 
 ## Run and Verify
 
-- This is a dependency-free PHP application; no package manifest, test suite, CI workflow, or formatter configuration is present.
-- `inc/config.inc.php` hard-codes the deployed `ROOTPATH` (`/home/www/4-host/app/infostore`). Set it to the local checkout before exercising AJAX locally, then run `php -S localhost:8000` from the repository root. The configured SQLite file is `ROOTPATH/.data/data.sqlite3`.
-- The available repository-wide check is PHP syntax linting: `for f in $(git ls-files '*.php'); do php -l "$f" || exit 1; done`.
-- `.data/` is ignored. `initDB()` creates missing tables, but uses `CREATE TABLE IF NOT EXISTS`; it does not migrate existing databases when the schema changes.
+- Dependency-freies PHP 8.2+ (benoetigt `pdo_sqlite` und `sodium`); kein Composer, kein Build-Schritt.
+- Lokal starten: `php -S localhost:8000` aus `public/` heraus. Konfiguration ueber Umgebungsvariablen (`config/env.example`); Default-Datenbank ist `var/data.sqlite3` (gitignored, entsteht samt Migrationen beim ersten Request).
+- Tests: `php tests/run.php` (dependency-freier Runner, frische SQLite-Datei pro Test).
+- Syntax-Lint: `for f in $(git ls-files '*.php'); do php -l "$f" || exit 1; done`.
 
-## Structure and Data Flow
+## Struktur
 
-- `index.php` is the login shell. Successful client-side login loads `edit.php`; the editor behavior is in `js/entry.class.js` and sharing behavior is in `js/share.class.js`.
-- `ajax.php?m=<method>` JSON-decodes the request and includes `ajax/<method>.inc.php`. Add endpoint handlers as `.inc.php` files and keep the `$ajaxRet` JSON response shape (`status`, `msg`, `data`).
-- `src/class_dbobject.php` provides the PDO persistence layer; `m_data`, `m_user`, and `m_share` bind it to the `data`, `users`, and `shares` tables.
-- `js/js.php` emits every top-level `.js` file in `js/` and assigns `window.onload = init`; do not add separate script tags for those files. It does not recurse into `js/ext/`.
+- `public/` ist der einzige Webroot: `index.php` (App-Shell mit CSP), `api.php` (JSON-API-Front-Controller mit fester Routing-Tabelle), `assets/` (ES-Module, CSS, lokal vendored Quill).
+- `app/` enthaelt das Backend: `Http/` (Request-Validierung, Response, ApiError), `Repository/` (prepared statements, immer `store_id`-gescoped), `Service/` (Use-Cases: `AuthService`, `EntryService`, `ShareService` mit Share-Zustandsautomat), `Mail/`, `Session`, `RateLimiter`, `Migrator`.
+- `migrations/NNN_name.sql` laeuft genau einmal (protokolliert in `schema_migrations`). Schemaaenderungen nur ueber neue Migrationsdateien.
+- Neue API-Endpoints werden in der Routing-Tabelle in `public/api.php` registriert (Methode, Pfadmuster, Handler, Guard `public|auth|owner|csrf`); niemals Request-Werte in Include-Pfaden.
 
-## Security Boundary
+## Sicherheitsmodell (bewahren!)
 
-- Entry titles and content are encrypted in the browser by `js/se_crypt.class.js` before `save`; the server stores and returns ciphertext plus IV. Preserve the client/server field names and encryption flow when changing entry or sharing payloads.
-- Login identity is a client-side SHA-256 hash of the store ID, and the browser retains the derived key and verification values in `localStorage`; changing these formats breaks access to existing stores.
+- Split-Key-Verfahren: Der Browser leitet aus Passwort+Salt per PBKDF2-SHA256 (600k, versioniert) ein Master-Secret ab und splittet per HKDF in `auth`-Key (geht zum Server, dort Argon2id-gehasht) und `enc`-Key (bleibt im Browser). Passwort und Content-Key duerfen den Browser nie verlassen.
+- Inhalte sind AES-256-GCM-verschluesselt mit frischem Zufalls-Nonce je Vorgang und AAD-Bindung (`crypto.js`); der Server speichert nur Ciphertext, IVs und KDF-Metadaten. Jede Payload traegt `crypto_version` - Formataenderungen brauchen eine neue Version plus Legacy-Lesepfad.
+- Autorisierung ausschliesslich ueber die serverseitige Session (`Session::requireStoreId/requireOwner`); Mutationen pruefen `rowCount === 1`. Schluesselmaterial im Client existiert nur im Speicher (kein localStorage o. ae.).
+- Sharing: Zustandsautomat `active -> requested -> granted|denied`, Widerruf jederzeit; Serverzeit ist allein massgeblich, Key-Pakete gibt es nur im Zustand `granted` gegen Seed-Nachweis.
