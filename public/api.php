@@ -101,11 +101,16 @@ function entryFields(Request $req): array
 
 switch ($handler) {
     case 'authRegister':
-        $result = $auth->register(
+        $auth->register(
             $req->str('store', 64),
             $req->b64('auth_key', 32, 32),
-            $req->b64('kdf_salt', 16, 64),
-            $req->int('kdf_iterations', 100_000, 5_000_000),
+            [
+                'version'     => $req->int('kdf_version', 2, 2),
+                'salt'        => $req->b64('kdf_salt', 16, 64),
+                'time_cost'   => $req->int('kdf_time_cost', 1, 20),
+                'memory'      => $req->int('kdf_memory', 8_192, 1_048_576),
+                'parallelism' => $req->int('kdf_parallelism', 1, 4),
+            ],
             $req->ip()
         );
         Response::json(['registered' => true], 201);

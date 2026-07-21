@@ -21,13 +21,26 @@ final class StoreRepository
         return $row === false ? null : $row;
     }
 
-    public function create(string $name, string $authHash, string $kdfSalt, int $kdfIterations, int $kdfVersion): int
+    /**
+     * @param array{version:int,salt:string,time_cost:int,memory:?int,parallelism:?int} $kdf
+     */
+    public function create(string $name, string $authHash, array $kdf): int
     {
         $stm = $this->db->prepare(
-            'INSERT INTO stores (name, auth_hash, kdf_salt, kdf_iterations, kdf_version, created_at)
-             VALUES (?, ?, ?, ?, ?, ?)'
+            'INSERT INTO stores
+                (name, auth_hash, kdf_version, kdf_salt, kdf_time_cost, kdf_memory, kdf_parallelism, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
         );
-        $stm->execute([$name, $authHash, $kdfSalt, $kdfIterations, $kdfVersion, Database::now()]);
+        $stm->execute([
+            $name,
+            $authHash,
+            $kdf['version'],
+            $kdf['salt'],
+            $kdf['time_cost'],
+            $kdf['memory'],
+            $kdf['parallelism'],
+            Database::now(),
+        ]);
         return (int) $this->db->lastInsertId();
     }
 }

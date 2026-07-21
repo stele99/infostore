@@ -19,8 +19,8 @@ function makeShares(): ShareService
 function shareStore(): int
 {
     $db = freshDb();
-    $db->exec("INSERT INTO stores (name, auth_hash, kdf_salt, kdf_iterations, created_at)
-               VALUES ('store.owner', 'h', 's', 600000, 'x'), ('store.other', 'h', 's', 600000, 'x')");
+    $db->exec("INSERT INTO stores (name, auth_hash, kdf_version, kdf_salt, kdf_time_cost, created_at)
+               VALUES ('store.owner', 'h', 1, 's', 600000, 'x'), ('store.other', 'h', 1, 's', 600000, 'x')");
     return 1;
 }
 

@@ -48,7 +48,13 @@ final class Config
             'max_shares_per_store'  => 10,
             'login_max_attempts'    => 10,   // pro Fenster, je Store-Name und je IP
             'login_window_seconds'  => 900,
-            'kdf_default_iterations' => 600_000,
+            'kdf_default_iterations' => 600_000, // Legacy PBKDF2 (KDF-Version 1), nur fuer Shares
+            // Argon2id-Defaults (KDF-Version 2) fuer neue Stores; an OWASP-Baseline
+            // ausgerichtet (m=19 MiB, t=3, p=1). Auch die serverseitigen Mindestwerte
+            // in AuthService::validateKdf orientieren sich hieran.
+            'argon2_time_cost'    => 3,
+            'argon2_memory'       => 19_456, // KiB = 19 MiB
+            'argon2_parallelism'  => 1,
         ];
 
         $local = $root . '/config/local.php';

@@ -34,7 +34,55 @@ final class AuthService
         return $name;
     }
 
-    public function register(string $name, string $authKeyB64, string $kdfSaltB64, int $kdfIterations, string $ip): array
+    /**
+     * Validiert und normalisiert die vom Client gelieferten KDF-Parameter.
+     * Neue Stores muessen KDF-Version 2 (Argon2id) verwenden; Version 1
+     * (PBKDF2) existiert nur noch fuer aus dem Altbestand migrierte Stores.
+     *
+     * @param array<string,mixed> $in
+     * @return array{version:int,salt:string,time_cost:int,memory:?int,parallelism:?int}
+     */
+    private function validateKdf(array $in, bool $forRegistration): array
+    {
+        $version = (int) ($in['version'] ?? 0);
+        $saltB64 = is_string($in['salt'] ?? null) ? $in['salt'] : '';
+        $salt = base64_decode($saltB64, true);
+        if ($salt === false || strlen($salt) < 16 || strlen($salt) > 64) {
+            throw ApiError::badRequest('kdf_salt muss 16-64 Bytes Base64 sein.');
+        }
+        $timeCost = (int) ($in['time_cost'] ?? 0);
+
+        if ($version === 2) {
+            $memory = (int) ($in['memory'] ?? 0);
+            $parallelism = (int) ($in['parallelism'] ?? 0);
+            // Untergrenzen an OWASP-Baseline fuer Argon2id ausgerichtet, damit
+            // ein Client seinen eigenen Store nicht unter sichere Werte schwaecht.
+            if ($timeCost < 2 || $timeCost > 20) {
+                throw ApiError::badRequest('kdf time_cost ausserhalb des erlaubten Bereichs.');
+            }
+            if ($memory < 19_456 || $memory > 1_048_576) {
+                throw ApiError::badRequest('kdf memory ausserhalb des erlaubten Bereichs.');
+            }
+            if ($parallelism < 1 || $parallelism > 4) {
+                throw ApiError::badRequest('kdf parallelism ausserhalb des erlaubten Bereichs.');
+            }
+            return ['version' => 2, 'salt' => $saltB64, 'time_cost' => $timeCost, 'memory' => $memory, 'parallelism' => $parallelism];
+        }
+
+        if ($version === 1 && !$forRegistration) {
+            if ($timeCost < 100_000 || $timeCost > 10_000_000) {
+                throw ApiError::badRequest('kdf time_cost ausserhalb des erlaubten Bereichs.');
+            }
+            return ['version' => 1, 'salt' => $saltB64, 'time_cost' => $timeCost, 'memory' => null, 'parallelism' => null];
+        }
+
+        throw ApiError::badRequest('kdf_version wird nicht unterstuetzt.');
+    }
+
+    /**
+     * @param array<string,mixed> $kdfInput vom Client: version, salt, time_cost, memory, parallelism
+     */
+    public function register(string $name, string $authKeyB64, array $kdfInput, string $ip): array
     {
         self::validateName($name);
         $this->limiter->hit('register', $ip, 20);
@@ -43,13 +91,7 @@ final class AuthService
         if ($authKey === false || strlen($authKey) !== 32) {
             throw ApiError::badRequest('auth_key muss 32 Bytes Base64 sein.');
         }
-        $salt = base64_decode($kdfSaltB64, true);
-        if ($salt === false || strlen($salt) < 16 || strlen($salt) > 64) {
-            throw ApiError::badRequest('kdf_salt muss 16-64 Bytes Base64 sein.');
-        }
-        if ($kdfIterations < 100_000 || $kdfIterations > 5_000_000) {
-            throw ApiError::badRequest('kdf_iterations ausserhalb des erlaubten Bereichs.');
-        }
+        $kdf = $this->validateKdf($kdfInput, true);
 
         if ($this->stores->findByName($name) !== null) {
             // Bewusst generisch: Registrierung verrät so wenig wie möglich.
@@ -59,7 +101,7 @@ final class AuthService
         $hash = \App\PasswordHash::hash($authKey);
 
         try {
-            $storeId = $this->stores->create($name, $hash, $kdfSaltB64, $kdfIterations, 1);
+            $storeId = $this->stores->create($name, $hash, $kdf);
         } catch (\PDOException) {
             throw ApiError::conflict('Registrierung nicht möglich.');
         }
@@ -67,9 +109,9 @@ final class AuthService
     }
 
     /**
-     * KDF-Parameter für den Login. Für unbekannte Stores wird ein
-     * deterministischer Decoy-Salt geliefert, damit Existenz nicht
-     * per Salt-Abfrage aufzählbar ist.
+     * KDF-Parameter für den Login. Für unbekannte Stores werden deterministische
+     * Decoy-Parameter im Format eines Argon2id-Stores geliefert, damit Existenz
+     * nicht per Salt-Abfrage aufzählbar ist.
      */
     public function kdfParams(string $name, string $ip): array
     {
@@ -79,16 +121,20 @@ final class AuthService
         $store = $this->stores->findByName($name);
         if ($store !== null) {
             return [
-                'kdf_salt'       => $store['kdf_salt'],
-                'kdf_iterations' => (int) $store['kdf_iterations'],
-                'kdf_version'    => (int) $store['kdf_version'],
+                'kdf_version'     => (int) $store['kdf_version'],
+                'kdf_salt'        => $store['kdf_salt'],
+                'kdf_time_cost'   => (int) $store['kdf_time_cost'],
+                'kdf_memory'      => isset($store['kdf_memory']) ? (int) $store['kdf_memory'] : null,
+                'kdf_parallelism' => isset($store['kdf_parallelism']) ? (int) $store['kdf_parallelism'] : null,
             ];
         }
         $decoy = hash_hmac('sha256', 'kdf-salt|' . $name, Config::appSecret(), true);
         return [
-            'kdf_salt'       => base64_encode(substr($decoy, 0, 16)),
-            'kdf_iterations' => (int) Config::get('kdf_default_iterations'),
-            'kdf_version'    => 1,
+            'kdf_version'     => 2,
+            'kdf_salt'        => base64_encode(substr($decoy, 0, 16)),
+            'kdf_time_cost'   => (int) Config::get('argon2_time_cost'),
+            'kdf_memory'      => (int) Config::get('argon2_memory'),
+            'kdf_parallelism' => (int) Config::get('argon2_parallelism'),
         ];
     }
 

@@ -16,8 +16,8 @@ function makeEntries(): EntryService
 function twoStores(): array
 {
     $db = freshDb();
-    $db->exec("INSERT INTO stores (name, auth_hash, kdf_salt, kdf_iterations, created_at)
-               VALUES ('store.a', 'h', 's', 600000, 'x'), ('store.b', 'h', 's', 600000, 'x')");
+    $db->exec("INSERT INTO stores (name, auth_hash, kdf_version, kdf_salt, kdf_time_cost, created_at)
+               VALUES ('store.a', 'h', 1, 's', 600000, 'x'), ('store.b', 'h', 1, 's', 600000, 'x')");
     return [1, 2];
 }
 

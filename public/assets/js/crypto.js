@@ -1,8 +1,12 @@
 /**
  * Client-Kryptografie auf Basis der Web Crypto API.
  *
- * Format-Version 1:
- *   KDF:    PBKDF2-SHA256 (600k Iterationen Default), Salt 16 Byte zufällig
+ *   KDF (Store-Login/Content-Key):
+ *     Version 2 (Default, neue Stores): Argon2id via hash-wasm (m=19 MiB,
+ *       t=3, p=1), Salt 16 Byte zufällig. Memory-hart gegen GPU-Cracking.
+ *     Version 1 (Legacy, nur migrierte Stores): PBKDF2-SHA256 (600k).
+ *   KDF (Share-Seeds): PBKDF2-SHA256 - die 12-Wort-Phrase hat ~132 Bit
+ *     Entropie, dort ist eine memory-harte KDF ohne Sicherheitsgewinn.
  *   Split:  HKDF-SHA256 aus dem Master-Secret; info "auth" (Server-Login),
  *           info "enc" (Content-Key) - der Server sieht nur den Auth-Key.
  *   AEAD:   AES-256-GCM, 12-Byte-Nonce frisch aus einem CSPRNG je Verschlüsselung,
@@ -13,7 +17,19 @@ const te = new TextEncoder();
 const td = new TextDecoder();
 
 export const CRYPTO_VERSION = 1;
-export const DEFAULT_ITERATIONS = 600000;
+export const DEFAULT_ITERATIONS = 600000; // PBKDF2 (KDF-Version 1 und Share-Seeds)
+
+// KDF-Versionen (Store-Login / Content-Key)
+export const KDF_PBKDF2 = 1;
+export const KDF_ARGON2 = 2;
+
+// Argon2id-Defaults fuer neue Stores (an OWASP-Baseline ausgerichtet).
+export const ARGON2_DEFAULTS = Object.freeze({
+  version: KDF_ARGON2,
+  time_cost: 3,
+  memory: 19456, // KiB = 19 MiB
+  parallelism: 1,
+});
 
 export function toB64(bytes) {
   return btoa(String.fromCharCode(...new Uint8Array(bytes)));
@@ -29,7 +45,7 @@ export function randomBytes(n) {
   return b;
 }
 
-/** PBKDF2: Passwort/Phrase -> 32 Byte Master-Secret. */
+/** PBKDF2: Passwort/Phrase -> 32 Byte Master-Secret (KDF-Version 1, Share-Seeds). */
 export async function deriveMasterBits(secret, saltBytes, iterations) {
   const keyMaterial = await crypto.subtle.importKey("raw", te.encode(secret), "PBKDF2", false, ["deriveBits"]);
   const bits = await crypto.subtle.deriveBits(
@@ -38,6 +54,42 @@ export async function deriveMasterBits(secret, saltBytes, iterations) {
     256
   );
   return new Uint8Array(bits);
+}
+
+/** Argon2id: Passwort -> 32 Byte Master-Secret (KDF-Version 2). */
+export async function deriveMasterArgon2(secret, saltBytes, { time_cost, memory, parallelism }) {
+  if (typeof window.hashwasm === "undefined") {
+    throw new Error("Argon2-Bibliothek nicht geladen.");
+  }
+  return window.hashwasm.argon2id({
+    password: secret,
+    salt: saltBytes,
+    parallelism,
+    iterations: time_cost,
+    memorySize: memory, // KiB
+    hashLength: 32,
+    outputType: "binary",
+  });
+}
+
+/**
+ * Leitet das Master-Secret gemäß den (vom Server gelieferten oder lokal
+ * gewählten) KDF-Parametern ab. Erwartet Server-Feldnamen:
+ * { kdf_version, kdf_salt (Base64) | Salt-Bytes, kdf_time_cost, kdf_memory, kdf_parallelism }.
+ */
+export async function deriveMaster(secret, kdf) {
+  const salt = kdf.salt_bytes ?? fromB64(kdf.kdf_salt);
+  if (kdf.kdf_version === KDF_ARGON2) {
+    return deriveMasterArgon2(secret, salt, {
+      time_cost: kdf.kdf_time_cost,
+      memory: kdf.kdf_memory,
+      parallelism: kdf.kdf_parallelism,
+    });
+  }
+  if (kdf.kdf_version === KDF_PBKDF2) {
+    return deriveMasterBits(secret, salt, kdf.kdf_time_cost);
+  }
+  throw new Error("Unbekannte KDF-Version: " + kdf.kdf_version);
 }
 
 /** HKDF-Ableitung mit Domänentrennung über info. */
