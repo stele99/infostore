@@ -52,7 +52,7 @@ header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
                 </div>
                 <div class="brand-text">
                     <strong>Secure Info Store</strong>
-                    <span>Clientseitig verschlüsselte Notizen</span>
+                    <span>Clientseitig sicher verschlüsselte Notizen</span>
                 </div>
             </div>
 

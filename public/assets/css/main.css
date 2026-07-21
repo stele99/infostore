@@ -7,8 +7,8 @@
   --bg-elevated: #111827;
   --card: #151c2b;
   --card-hover: #1a2336;
-  --text: #e8edf7;
-  --muted: #8b97ad;
+  --text: #f5f7fc;
+  --muted: #c7d4eb;
   --border: #2a3548;
   --border-strong: #3a4861;
   --accent: #5b8cff;
@@ -28,7 +28,7 @@
   --radius: 12px;
   --radius-sm: 8px;
   --radius-lg: 16px;
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font: Arial, Helvetica, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --topbar-h: 56px;
   --actions-h: 52px;
@@ -251,11 +251,21 @@ body.app-main .topbar {
   stroke-linejoin: round;
 }
 
-.theme-toggle .icon-sun { display: none; }
-.theme-toggle .icon-moon { display: block; }
+.theme-toggle .icon-sun {
+  display: none;
+}
 
-[data-theme="light"] .theme-toggle .icon-sun { display: block; }
-[data-theme="light"] .theme-toggle .icon-moon { display: none; }
+.theme-toggle .icon-moon {
+  display: block;
+}
+
+[data-theme="light"] .theme-toggle .icon-sun {
+  display: block;
+}
+
+[data-theme="light"] .theme-toggle .icon-moon {
+  display: none;
+}
 
 /* ---- Views ---- */
 .view {
@@ -306,13 +316,13 @@ body.app-main .topbar {
 
 .brand-text strong {
   display: block;
-  font-size: 1.05rem;
+  font-size: 1.7rem;
   letter-spacing: -0.02em;
 }
 
 .brand-text span {
   display: block;
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   color: var(--muted);
 }
 
@@ -583,7 +593,7 @@ button.linklike:hover:not(:disabled) {
   margin-top: 0.35rem;
 }
 
-.button-row > button.primary {
+.button-row>button.primary {
   flex: 1 1 auto;
 }
 
@@ -653,7 +663,9 @@ button.linklike:hover:not(:disabled) {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 button.is-loading .btn-label {
@@ -708,16 +720,24 @@ button.is-loading .btn-label {
 }
 
 /* ---- Main shell ---- */
+body.app-main {
+  overflow: hidden;
+  height: 100dvh;
+}
+
 #view-main {
   padding: 0;
-  min-height: 100dvh;
   width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
 }
 
 #view-main:not([hidden]) {
   display: flex;
   flex-direction: column;
-  align-items: stretch; /* überschreibt .view { align-items: flex-start } */
+  align-items: stretch;
+  /* überschreibt .view { align-items: flex-start } */
 }
 
 .topbar {
@@ -798,12 +818,14 @@ button.is-loading .btn-label {
   display: grid;
   grid-template-columns: 280px 1fr;
   gap: 0;
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
+  height: 100%;
   align-self: stretch;
   width: 100%;
   max-width: none;
   margin: 0;
+  overflow: hidden;
 }
 
 .sidebar {
@@ -814,6 +836,8 @@ button.is-loading .btn-label {
   border-right: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg-elevated) 70%, transparent);
   min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .sidebar-head {
@@ -830,8 +854,9 @@ button.is-loading .btn-label {
   margin: 0;
   padding: 0.25rem;
   overflow-y: auto;
-  flex: 1;
-  min-height: 12rem;
+  overscroll-behavior: contain;
+  flex: 1 1 auto;
+  min-height: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--card);
@@ -897,8 +922,13 @@ button.is-loading .btn-label {
 }
 
 @keyframes shimmer {
-  0% { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: -100% 0;
+  }
 }
 
 .editor-area {
@@ -908,6 +938,15 @@ button.is-loading .btn-label {
   padding: 0.85rem 1rem 1rem;
   min-width: 0;
   min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.editor-area>.title-field,
+.editor-area>.meta,
+.editor-area>.recipient-banner,
+.editor-area>.editor-actions {
+  flex-shrink: 0;
 }
 
 .recipient-banner {
@@ -983,8 +1022,8 @@ button.is-loading .btn-label {
   background: var(--card);
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 45vh;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .editor-actions {
@@ -1014,6 +1053,7 @@ button.is-loading .btn-label {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .ql-toolbar.ql-snow .ql-formats {
@@ -1115,22 +1155,56 @@ button.is-loading .btn-label {
   color: var(--accent);
 }
 
-.ql-container.ql-snow {
+/* Quill: Toolbar und #editor.ql-container sind Geschwister in .editor-shell */
+.editor-shell .ql-container.ql-snow,
+#editor.ql-container {
   border: none;
   font-family: var(--font);
   font-size: 1rem;
   color: var(--text);
-  flex: 1;
-}
-
-#editor {
-  min-height: 40vh;
   background: var(--card);
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
-.ql-editor {
-  min-height: 40vh;
+.editor-shell .ql-editor {
+  min-height: 100%;
   line-height: 1.65;
+  font-family: var(--font);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+/* Quill-Defaults ~halbieren (h1 2em→1em, h2 1.5em→0.95em, h3 1.17em→0.88em),
+   mit fester rem-Basis damit sie nicht winziger als Body wirken */
+.editor-shell .ql-editor h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0.55em 0 0.3em;
+}
+
+.editor-shell .ql-editor h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0.45em 0 0.2em;
+}
+
+.editor-shell .ql-editor h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0.45em 0 0.2em;
+}
+
+.editor-shell .ql-editor pre,
+.editor-shell .ql-editor code,
+.editor-shell .ql-editor .ql-code-block-container {
+  font-family: var(--mono);
 }
 
 .ql-editor.ql-blank::before {
@@ -1386,6 +1460,11 @@ button.is-loading .btn-label {
 
   .editor-area {
     padding-bottom: calc(var(--actions-h) + 0.75rem + env(safe-area-inset-bottom));
+    height: 100%;
+  }
+
+  .editor-shell {
+    min-height: 0;
   }
 
   .editor-actions {
@@ -1473,6 +1552,7 @@ button.is-loading .btn-label {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -1522,7 +1602,7 @@ button.is-loading .btn-label {
 }
 
 @media print {
-  body > *:not(#print-sheet) {
+  body>*:not(#print-sheet) {
     display: none !important;
   }
 
